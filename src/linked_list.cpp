@@ -8,38 +8,51 @@
 namespace itis {
 
 void LinkedList::Add(Element e) {
-  Node* node = new Node(e, nullptr);
   if (size_  == 0){
-      assert(head_ == nullptr && tail_ == nullptr);
+      Node* node = new Node(e, nullptr);
       head_ = node;
       tail_ = node;
+      size_ += 1;
   } else{
+      Node* node = new Node(e, nullptr);
       tail_->next = node;
       tail_ = node;
+      size_ += 1;
   }
-  size_ += 1;
 }
 
 void LinkedList::Insert(int index, Element e) {
   internal::check_out_of_range(index, 0, size_ + 1);
-    if (size_ == 0 || index == size_){
-        Add(e);
+    if (size_ == 0){
+        Node* new_node = new Node(e, nullptr);
+        head_ = new_node;
+        tail_ = new_node;
+        size_ += 1;
     } else if (index == 0){
         Node* new_node = new Node(e, head_);
         head_ = new_node;
         size_ += 1;
+    } else if (index == size_){
+        Node* new_node = new Node(e, nullptr);
+        tail_->next = new_node;
+        tail_ = new_node;
+        size_ += 1;
     } else{
-        Node* current = find_node(index-1);
+        Node* current = head_;
+        for (int i = 0; i < index - 1; ++i) {
+            current = current->next;
+        }
+
         Node* new_node = new Node(e, current->next);
         current->next = new_node;
         size_ += 1;
     }
-
 }
 
 void LinkedList::Set(int index, Element e) {
   internal::check_out_of_range(index, 0, size_);
-  find_node(index)->data = e;
+    Node* node = find_node(index);
+    node->data = e;
 }
 
 Element LinkedList::Remove(int index) {
@@ -64,19 +77,21 @@ Element LinkedList::Remove(int index) {
 
 void LinkedList::Clear() {
     Node* current = head_;
-    Node* next;
-    while (current != nullptr){
-        next = current->next;
-        current->data = Element::UNINITIALIZED;
-        current->next = nullptr;
+    for (int i = 0; i < size_; ++i) {
+        Node* next = current->next;
+        delete current;
         current = next;
     }
+    delete current;
     size_ = 0;
+    head_ = nullptr;
+    tail_ = nullptr;
 }
 
 Element LinkedList::Get(int index) const {
   internal::check_out_of_range(index, 0, size_);
-  return find_node(index)->data;
+    Node* node = find_node(index);
+    return node->data;
 }
 
 int LinkedList::IndexOf(Element e) const {
@@ -90,11 +105,16 @@ int LinkedList::IndexOf(Element e) const {
 
 Node *LinkedList::find_node(int index) const {
   assert(index >= 0 && index < size_);
-    if (index == size_ - 1) return tail_;
-  int cnt = 0;
-  for (Node* current = head_; current != nullptr; current = current->next){
-      if (cnt == index) return current;
-      cnt += 1;
+  if (index == size_ - 1) {
+      return tail_;
+  } else if (index == 0){
+      return head_;
+  } else {
+      int cnt = 0;
+      for (Node *current = head_; current != nullptr; current = current->next) {
+          if (cnt == index) return current;
+          cnt += 1;
+      }
   }
   return nullptr;
 }
